@@ -13,6 +13,8 @@ const L = (acct, dr, cr, dim) => ({
   "line/account-code": acct, "line/debit": dr, "line/credit": cr,
   "line/commodity": "MXN", ...(dim ? { "line/dimensions": dim } : {}),
 });
+// Display variance: JVM expone "10", D1 "10.00" — comparar numérico.
+const num = (s) => Number(s);
 let fails = 0;
 const check = (name, cond, extra = "") => {
   console.log(cond ? `  ✓ ${name}` : `  ✗ ${name} ${extra}`);
@@ -67,27 +69,27 @@ check("descuadrado rechazado", bad["receipt/status"] === "rejected");
 // 6. lecturas
 const coreTB = (await query("trial-balance", CORE)).result["result/rows"];
 const coreBy = Object.fromEntries(coreTB.map((r) => [r["account/code"], r]));
-check("1100 Dr 10 (1000 funding - 990 FX)", coreBy["1100"]?.balance === "10.00");
-check("4110 Cr 5 (fee)", coreBy["4110"]?.balance === "5.00");
+check("1100 Dr 10 (1000 funding - 990 FX)", num(coreBy["1100"]?.balance) === 10.0);
+check("4110 Cr 5 (fee)", num(coreBy["4110"]?.balance) === 5.0);
 const railTB = (await query("trial-balance", RAIL)).result["result/rows"];
 const railBy = Object.fromEntries(railTB.map((r) => [r["account/code"], r]));
-check("riel 1200 Dr 100", railBy["1200"]?.balance === "100.00");
+check("riel 1200 Dr 100", num(railBy["1200"]?.balance) === 100.0);
 check("riel clearing cero",
-  !railBy["1310"] || railBy["1310"].balance === "0.00");
+  !railBy["1310"] || num(railBy["1310"]?.balance) === 0.0);
 const reg = (await query("register", RAIL)).result["result/entries"];
 check("register riel 4 líneas con intent",
   reg.length === 4 && reg.every((l) => l["line/dimensions"]?.railIntentId === "R-1"));
 const income = (await query("income commodity MXN", CORE)).result;
-check("income MXN revenue 25", income["result/revenue"] === "25");
-check("income MXN expenses 10 (fee)", income["result/expenses"] === "10");
-check("income MXN net 15", income["result/net-income"] === "15");
-check("FX spread 20 en 4100",
-  (await query("trial-balance", CORE)).result["result/rows"]
-    .find((r) => r["account/code"] === "4100")?.balance === "20.00");
-const usdBal = (await query("trial-balance", CORE)).result["result/rows"]
-  .filter((r) => r.commodity === "USD");
-check("1101 USD Dr 50",
-  usdBal.find((r) => r["account/code"] === "1101")?.balance === "50.00");
+check("income MXN revenue 25", num(income["result/revenue"]) === 25);
+check("income MXN expenses 10 (fee)", num(income["result/expenses"]) === 10);
+check("income MXN net 15", num(income["result/net-income"]) === 15);
+const fxRow = (await query("trial-balance", CORE)).result["result/rows"]
+    .find((r) => r["account/code"] === "4100");
+check("FX spread 20 en 4100", num(fxRow?.balance) === 20);
+// JVM no trae commodity por fila; D1 sí. Buscar por cuenta (única).
+const usdRow = (await query("trial-balance", CORE)).result["result/rows"]
+  .find((r) => r["account/code"] === "1101");
+check("1101 USD Dr 50", num(usdRow?.balance) === 50);
 
 console.log(fails === 0 ? "\nDEMO VERDE" : `\nDEMO CON ${fails} FALLOS`);
 process.exit(fails === 0 ? 0 : 1);
