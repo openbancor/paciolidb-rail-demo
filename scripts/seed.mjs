@@ -16,13 +16,21 @@ for (const lid of [CORE, RAIL])
   await soft(command("ledger/declare", `declare-${lid}`,
     { "ledger/id": lid, "ledger/reporting-commodity": "MXN" }), `declare ${lid}`);
 
+for (const lid of [CORE, RAIL])
+  await soft(command("party/register", `party-${lid}-CLI-1`,
+    { "ledger/id": lid, "party/code": "CLI-1",
+      "party/name": "Cliente Uno", "party/type": "customer" }), `party ${lid}`);
+
 const accts = [
   [CORE, "1100", "Core MXN settlement cash", "asset", "debit"],
   [CORE, "1101", "Core USD settlement cash", "asset", "debit"],
   [CORE, "1210", "Customer available balance", "liability", "credit"],
   [CORE, "1220", "Customer held balance", "liability", "credit"],
   [CORE, "1230", "Customer consumed balance", "liability", "credit"],
+  [CORE, "4100", "FX revenue", "revenue", "credit"],
   [CORE, "4110", "Payment fee revenue", "revenue", "credit"],
+  [CORE, "5100", "FX cost", "expense", "debit"],
+  [CORE, "5200", "FX loss", "expense", "debit"],
   [CORE, "1200", "Customer return receivables", "asset", "debit"],
   [RAIL, "1200", "Core receivable", "asset", "debit"],
   [RAIL, "1300", "Provider cash", "asset", "debit"],
