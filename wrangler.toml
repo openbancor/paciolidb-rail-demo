@@ -1,0 +1,16 @@
+name = "paciolidb-rail-demo"
+main = "engine/worker/dist/worker.js"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "paciolidb-rail-demo"
+database_id = "local-only-replace-on-deploy"
+migrations_dir = "engine/migrations"
+
+[vars]
+LEDGER_ID = "default"
+
+[build]
+command = "bash engine/worker/build.sh"

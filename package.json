@@ -1,0 +1,17 @@
+{
+  "name": "paciolidb-rail-demo",
+  "version": "0.1.0",
+  "description": "Proyecto ejemplo: riel de pagos (core + railman) sobre PacioliDB. Corre local o en Cloudflare contra el mismo bundle.",
+  "type": "module",
+  "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "dev": "wrangler dev --local --port 8787",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 migrations apply paciolidb-rail-demo --local",
+    "seed": "node scripts/seed.mjs",
+    "demo": "node scripts/demo.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^3.114.0"
+  }
+}
